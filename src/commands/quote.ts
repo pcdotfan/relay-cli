@@ -21,6 +21,7 @@ export type QuoteOpts = {
   recipient?: string
   slippage?: string
   noWallet?: boolean
+  account?: string
   testnet?: boolean
 }
 
@@ -37,7 +38,7 @@ export async function quoteCommand(opts: QuoteOpts) {
   let recipient = opts.recipient
   const signer = opts.noWallet
     ? undefined
-    : await tryBuildSigner(fromAsset.chain)
+    : await tryBuildSigner(fromAsset.chain, opts.account)
 
   if (signer) {
     user = signer.address
@@ -77,9 +78,12 @@ export async function quoteCommand(opts: QuoteOpts) {
   })
 }
 
-async function tryBuildSigner(chain: Awaited<ReturnType<typeof parseAsset>>['chain']) {
+async function tryBuildSigner(
+  chain: Awaited<ReturnType<typeof parseAsset>>['chain'],
+  account?: string
+) {
   try {
-    return await buildSignerForChain(chain)
+    return await buildSignerForChain(chain, account)
   } catch (e) {
     if (e instanceof RelayCliError && e.code === 'missing_env') {
       return undefined

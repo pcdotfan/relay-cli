@@ -29,8 +29,9 @@ program
       '',
       'Wraps @relayprotocol/relay-sdk with flag-driven subcommands.',
       'Assets use shorthand `<chain>:<token>` (e.g. base:USDC, eth:0x…, solana:SOL).',
-      'Signing reads from env: RELAY_EVM_PRIVATE_KEY, RELAY_SOLANA_PRIVATE_KEY,',
-      'RELAY_BITCOIN_PRIVATE_KEY. Read-only commands need no keys.'
+      'Signing reads comma-separated keys from env: RELAY_EVM_PRIVATE_KEYS,',
+      'RELAY_SOLANA_PRIVATE_KEYS, RELAY_BITCOIN_PRIVATE_KEYS. The first key is the',
+      'default signer; use --account <addr> to pick another. Read-only commands need no keys.'
     ].join('\n')
   )
   .version(VERSION, '-V, --version', 'print version and exit')
@@ -59,9 +60,10 @@ program
     [
       '',
       'Environment variables:',
-      '  RELAY_EVM_PRIVATE_KEY        32-byte hex key for EVM chains',
-      '  RELAY_SOLANA_PRIVATE_KEY     base58 or JSON byte array (64 bytes)',
-      '  RELAY_BITCOIN_PRIVATE_KEY    WIF-encoded mainnet key (P2WPKH derived)',
+      '  RELAY_EVM_PRIVATE_KEYS       one or more 32-byte hex keys, comma-separated',
+      '  RELAY_SOLANA_PRIVATE_KEYS    base58 or JSON byte array(s), comma-separated',
+      '  RELAY_BITCOIN_PRIVATE_KEYS   WIF-encoded mainnet key(s), comma-separated',
+      '  (singular *_PRIVATE_KEY env names are still accepted as a fallback)',
       '  RELAY_API_URL, RELAY_API_KEY override defaults',
       '  RELAY_RPC_URL_<chainId>      per-chain EVM RPC override',
       '  RELAY_SOLANA_RPC_URL         Solana RPC override',
@@ -230,15 +232,19 @@ program
     '--no-wallet',
     'skip env wallet; quote with dead-address defaults instead'
   )
+  .option(
+    '--account <addr>',
+    'pick a specific signer when RELAY_*_PRIVATE_KEYS holds multiple keys'
+  )
   .addHelpText(
     'after',
     [
       '',
       'Examples:',
-      '  $ RELAY_EVM_PRIVATE_KEY=0x… relay quote --from base:USDC --to arb:ETH --amount 100',
+      '  $ RELAY_EVM_PRIVATE_KEYS=0xaaa…,0xbbb… relay quote --from base:USDC --to arb:ETH --amount 100',
+      '  $ relay quote --from base:USDC --to arb:ETH --amount 100 --account 0xbbb…',
       '  $ relay quote --from base:ETH --to arb:ETH --amount 0.01 --no-wallet',
       '  $ relay quote --from eth:USDC --to op:USDC --amount 50 --recipient 0xabc…',
-      '  $ relay quote --from base:ETH --to zora:ETH --amount 0.05 --slippage 50',
       ''
     ].join('\n')
   )
@@ -252,6 +258,7 @@ program
       recipient: opts.recipient,
       slippage: opts.slippage,
       noWallet: opts.wallet === false,
+      account: opts.account,
       testnet: g.testnet
     })
   })
@@ -279,14 +286,18 @@ program
     'slippage tolerance in basis points (e.g. 100 = 1%)'
   )
   .option('-y, --yes', 'skip the y/N confirmation prompt')
+  .option(
+    '--account <addr>',
+    'pick a specific signer when RELAY_*_PRIVATE_KEYS holds multiple keys'
+  )
   .addHelpText(
     'after',
     [
       '',
       'Examples:',
       '  $ relay swap --from base:USDC --to arb:ETH --amount 100',
+      '  $ relay swap --from base:USDC --to arb:ETH --amount 100 --account 0xbbb…',
       '  $ relay swap --from solana:SOL --to base:ETH --amount 1 --yes',
-      '  $ relay swap --from eth:ETH --to base:ETH --amount 0.05 --recipient 0xabc…',
       '  $ relay --json swap --from base:ETH --to arb:ETH --amount 0.01 -y',
       '',
       'On success, the requestId is printed — feed it to `relay status` to track.',
@@ -302,6 +313,7 @@ program
       exactOutput: opts.exactOutput,
       recipient: opts.recipient,
       slippage: opts.slippage,
+      account: opts.account,
       yes: opts.yes,
       testnet: g.testnet
     })

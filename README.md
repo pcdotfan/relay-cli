@@ -60,15 +60,17 @@ Examples: `eth:USDC`, `base:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913`, `solana
 
 | Var | Used for |
 |---|---|
-| `RELAY_EVM_PRIVATE_KEY` | 32-byte hex (with or without `0x` prefix) |
-| `RELAY_SOLANA_PRIVATE_KEY` | base58 string **or** JSON byte array (64 bytes) |
-| `RELAY_BITCOIN_PRIVATE_KEY` | WIF-encoded mainnet key (P2WPKH `bc1…` derived) |
+| `RELAY_EVM_PRIVATE_KEYS` | one or more 32-byte hex keys, **comma-separated** (with or without `0x`) |
+| `RELAY_SOLANA_PRIVATE_KEYS` | base58 strings **or** JSON byte arrays, comma-separated |
+| `RELAY_BITCOIN_PRIVATE_KEYS` | WIF-encoded mainnet keys, comma-separated (P2WPKH `bc1…` derived) |
 | `RELAY_API_URL` | override Relay API base URL |
 | `RELAY_API_KEY` | optional Relay API key |
 | `RELAY_RPC_URL_<chainId>` | per-chain EVM RPC override (e.g. `RELAY_RPC_URL_8453`) |
 | `RELAY_SOLANA_RPC_URL` | Solana RPC override |
 | `RELAY_LOG_LEVEL` | SDK log level `0` (none) – `4` (verbose) |
 | `RELAY_DEBUG` | set to anything to print stack traces on error |
+
+The first key in each list is the default signer. Pass `--account <address>` to `quote`/`swap` to pick another. Singular `RELAY_*_PRIVATE_KEY` env names are still accepted as a fallback.
 
 Read-only commands (`chains`, `tokens`, `price`, `quote --no-wallet`, `status`) don't need any keys.
 

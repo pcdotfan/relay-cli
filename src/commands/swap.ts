@@ -24,6 +24,7 @@ export type SwapOpts = {
   exactOutput?: boolean
   recipient?: string
   slippage?: string
+  account?: string
   yes?: boolean
   testnet?: boolean
 }
@@ -37,7 +38,7 @@ export async function swapCommand(opts: SwapOpts) {
   const refAsset = opts.exactOutput ? toAsset : fromAsset
   const baseAmount = parseAmount(opts.amount, refAsset.decimals)
 
-  const signer = await buildSignerForChain(fromAsset.chain)
+  const signer = await buildSignerForChain(fromAsset.chain, opts.account)
   const recipient = opts.recipient ?? signer.address
 
   const options: Record<string, unknown> = {}
